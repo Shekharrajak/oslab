@@ -1,0 +1,187 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Apriori_Algorithm;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Scanner;
+
+/**
+ *
+ * @author c137151
+ */
+class Helpers
+{
+    //generates candidate set from L(k-1)
+    ArrayList<ArrayList<Integer>> generateCandidateandResolve(int checkpoint,int tran,ArrayList<ArrayList<Integer> > C) throws FileNotFoundException
+    {            
+         ArrayList<ArrayList<Integer> > L =new ArrayList<ArrayList<Integer>>();
+         
+         HashMap<ArrayList<Integer> , Integer> hm=new HashMap<ArrayList<Integer> , Integer>();
+         HashMap<ArrayList<Integer> , Integer> hmStart=new HashMap<ArrayList<Integer> , Integer>();
+         HashMap<ArrayList<Integer> , Boolean> hmChecked=new HashMap<ArrayList<Integer> , Boolean>();
+         
+         boolean finished=false;
+         
+         Scanner sc=new Scanner(new FileInputStream("Transaction.txt"));
+         
+         //to ignore the headings
+         String s=sc.nextLine();
+         
+         int pos=0;
+         while(!finished)
+         {
+             int start=pos,count=0;
+             //take checkpoint no. of items to generate candidate
+              ArrayList<ArrayList<Integer> > Dpart=new ArrayList<ArrayList<Integer> >();
+              
+              while(count<checkpoint)
+              {
+                  //to avoid the tranID
+                  s=sc.next();
+                  
+                  //take one transaction
+                  ArrayList<Integer> Dtran=new ArrayList<Integer>();
+                  
+                  int item=sc.nextInt();
+                  
+                  while(item!=-1)
+                  {
+                      Dtran.add(item);
+                      item=sc.nextInt();
+                  }
+                  
+                  Dpart.add(Dtran);
+      
+                  count++;
+                  pos++;
+                  
+                  //if EOF
+                  if(pos==tran)
+                  {
+                      pos=0;
+                      
+                      sc.close();
+                      sc=new Scanner(new FileInputStream("Transaction.txt"));
+                      
+                      //avoid heading
+                      s=sc.nextLine();
+                  }
+              }
+              
+              //check for all candidates in c
+              //once they are found frequent they are put in L
+              for(int i=0;i<C.size();i++)
+              {
+                  ArrayList<Integer> itemSet=new ArrayList<Integer>(C.get(i));
+                  
+                  //if the candidate is already entered but not is frequent list see if its count can be increased
+                  if(!hm.containsKey(itemSet))
+                  {
+                      hm.put(itemSet,0);
+                      hmStart.put(itemSet,start);
+                      hmChecked.put(itemSet,false);
+                  }
+                  else
+                  {
+                      //check if the start of this partition is after the start of the hmStart value 
+                      //of the arrayList
+                  }
+                  
+                  
+              }
+              
+              
+         }
+         
+         return L;
+    }
+    
+    boolean prune(ArrayList<ArrayList<Integer>> L,ArrayList<Integer> al)
+    {
+        int size=al.size();
+        boolean flag=true;
+        
+        //check all k-1 set present in L(k-1) or not
+        //for that from k-item set each time one one element is removed and checked
+        for(int i=0;i<size;i++)
+        {
+            ArrayList<Integer> newal=new ArrayList<Integer> (al);
+            newal.remove(i);
+            
+            //if any set is not present its superset can't be frequent
+            //so return false immediately
+            if(!L.contains(newal))
+            {
+                    flag=false;
+                    break;
+            }
+            
+        }
+        
+        return flag;
+    }
+    
+    //returns all unique items
+    ArrayList<ArrayList<Integer>> getUniqueList(int tran) throws FileNotFoundException
+    {
+         ArrayList<ArrayList<Integer>> C=new ArrayList<ArrayList<Integer>>();
+         
+         Scanner sc=new Scanner(new FileInputStream("Transaction.txt"));
+         sc.nextLine();
+         
+         for(int i=0;i<tran;i++)
+         {
+             //System.out.println("Tran No "+i);
+             String s=sc.next();
+             
+             int item=sc.nextInt();
+             while(item!=-1)
+             {
+                 //System.out.println("Item No "+item);
+                ArrayList<Integer> al=new ArrayList<Integer>();
+                al.add(item);
+                
+                if(!C.contains(al))
+                    C.add(al);
+                
+                item=sc.nextInt();
+             }
+         }
+          
+          
+         sc.close();
+         return C;
+    }
+    
+}
+public class DynamicItemSet 
+{
+    public static void main(String args[]) throws FileNotFoundException
+    {
+       Helpers helper=new Helpers();
+        
+        int CheckPoint=2;
+        
+       //Minimum support and max-no-of-item in one transaction
+       int MIN_SUP=2;
+       
+       //Total number of transaction
+       int TOT_TRAN=5;
+       
+       ArrayList<ArrayList<Integer>> Freq=new ArrayList<ArrayList<Integer>>();
+       ArrayList<ArrayList<Integer>> C=new ArrayList<ArrayList<Integer>>();
+       
+       //take all unique itams as candidate primarily
+       C=helper.getUniqueList(TOT_TRAN);
+       
+       Freq=helper.generateCandidateandResolve(CheckPoint,TOT_TRAN,C);
+       
+    }
+}
